@@ -6,8 +6,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "chorusdbjp",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "database_name": "chorusdbjp-db",
+      "database_id": "3feaf143-1239-4491-bf67-04e796f2fc0e",
       "migrations_dir": "migrations"
     }
   ]
