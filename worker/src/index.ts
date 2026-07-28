@@ -48,42 +48,57 @@ const page = `<!doctype html>
     const results = document.getElementById('results');
 
     function esc(value) {
-      return String(value ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+      return String(value ?? '').replace(/[&<>\"']/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;' })[c];
+      });
+    }
+
+    function card(song) {
+      const lyricist = song.lyricist ? '作詞：' + esc(song.lyricist) + '<br>' : '';
+      const tags = [
+        song.voicing ? '<span class="tag">' + esc(song.voicing) + '</span>' : '',
+        song.accompaniment ? '<span class="tag">' + esc(song.accompaniment) + '</span>' : '',
+        song.difficulty ? '<span class="tag">難易度 ' + esc(song.difficulty) + '</span>' : ''
+      ].join('');
+
+      return '<article class="card">' +
+        '<h2>' + esc(song.title) + '</h2>' +
+        '<div class="meta">' + lyricist + '作曲：' + esc(song.composer || '不明') + '</div>' +
+        '<div class="tags">' + tags + '</div>' +
+        '</article>';
     }
 
     function render() {
       const q = query.value.trim().toLowerCase();
       const v = voicing.value;
-      const items = state.songs.filter(song => {
+      const items = state.songs.filter(function (song) {
         const haystack = [song.title, song.title_kana, song.lyricist, song.composer].join(' ').toLowerCase();
         return (!q || haystack.includes(q)) && (!v || song.voicing === v);
       });
       status.textContent = items.length + '曲';
-      results.innerHTML = items.length ? items.map(song => `
-        <article class="card">
-          <h2>${esc(song.title)}</h2>
-          <div class="meta">
-            ${song.lyricist ? '作詞：' + esc(song.lyricist) + '<br>' : ''}
-            作曲：${esc(song.composer || '不明')}
-          </div>
-          <div class="tags">
-            ${song.voicing ? '<span class="tag">' + esc(song.voicing) + '</span>' : ''}
-            ${song.accompaniment ? '<span class="tag">' + esc(song.accompaniment) + '</span>' : ''}
-            ${song.difficulty ? '<span class="tag">難易度 ' + esc(song.difficulty) + '</span>' : ''}
-          </div>
-        </article>`).join('') : '<div class="empty">該当する曲がありません。</div>';
+      results.innerHTML = items.length
+        ? items.map(card).join('')
+        : '<div class="empty">該当する曲がありません。</div>';
     }
 
     fetch('/api/songs')
-      .then(r => { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
-      .then(songs => {
+      .then(function (response) {
+        if (!response.ok) throw new Error('API error ' + response.status);
+        return response.json();
+      })
+      .then(function (songs) {
         state.songs = Array.isArray(songs) ? songs : [];
-        [...new Set(state.songs.map(s => s.voicing).filter(Boolean))].sort().forEach(v => {
-          const option = document.createElement('option'); option.value = v; option.textContent = v; voicing.appendChild(option);
-        });
+        Array.from(new Set(state.songs.map(function (song) { return song.voicing; }).filter(Boolean)))
+          .sort()
+          .forEach(function (value) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            voicing.appendChild(option);
+          });
         render();
       })
-      .catch(error => {
+      .catch(function (error) {
         status.textContent = 'データの読み込みに失敗しました';
         results.innerHTML = '<div class="empty">D1の設定・マイグレーションを確認してください。<br>' + esc(error.message) + '</div>';
       });
@@ -99,7 +114,9 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === '/' && request.method === 'GET') {
-      return new Response(page, { headers: { 'content-type': 'text/html; charset=UTF-8' } });
+      return new Response(page, {
+        headers: { 'content-type': 'text/html; charset=UTF-8' },
+      });
     }
 
     if (url.pathname === '/api/songs' && request.method === 'GET') {
@@ -114,10 +131,13 @@ export default {
         `).all();
         return Response.json(result.results);
       } catch (error) {
-        return Response.json({ error: 'Database query failed', detail: String(error) }, { status: 500 });
+        return Response.json(
+          { error: 'Database query failed', detail: String(error) },
+          { status: 500 },
+        );
       }
     }
 
     return Response.json({ error: 'Not found' }, { status: 404 });
-  }
+  },
 };
