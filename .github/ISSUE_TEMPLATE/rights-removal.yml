@@ -1,0 +1,38 @@
+name: 権利・削除申請
+description: 権利者からの削除、リンク修正、掲載停止の申請です
+title: "[権利・削除] "
+labels: ["rights-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ChorusDBJPは歌詞・楽譜・録音物を保存せず、楽曲メタデータと外部リンクを扱います。申請内容を確認し、必要に応じて掲載停止または修正を行います。
+  - type: input
+    id: target
+    attributes:
+      label: 対象の曲名またはURL
+    validations:
+      required: true
+  - type: dropdown
+    id: request
+    attributes:
+      label: 申請内容
+      options:
+        - 掲載削除
+        - 外部リンク削除・変更
+        - クレジット修正
+        - その他
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: 詳細
+      description: 権利関係と希望する対応を説明してください。個人情報は公開Issueに記載しないでください。
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: 非公開連絡が必要な場合の連絡方法
+      description: 公開して問題のない連絡先のみ記載してください。
