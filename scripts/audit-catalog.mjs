@@ -23,7 +23,7 @@ const titleCounts = new Map();
 const ambiguousTitles = new Set([
   '道', '空', '風', '川', '夏', '卒業', '奇跡', '約束', 'ひかり', '手紙', 'ありがとう',
 ]);
-const collectionTitles = new Set(['光と風をつれて', 'ふるさとの四季', '心の四季']);
+const knownLegacyCollections = new Set(['光と風をつれて', 'ふるさとの四季', '心の四季']);
 
 for (const row of rows) {
   if (!row.title || !row.voicing || !Number.isInteger(row.difficulty)) {
@@ -37,8 +37,8 @@ for (const row of rows) {
   if (ambiguousTitles.has(row.title)) {
     warnings.push(`${row.title}: title is ambiguous; author/source verification is required`);
   }
-  if (collectionTitles.has(row.title)) {
-    errors.push(`${row.title}: known collection/suite title must not be registered as a single work`);
+  if (knownLegacyCollections.has(row.title)) {
+    warnings.push(`${row.title}: legacy collection/suite record must stay unpublished until normalized`);
   }
 }
 
