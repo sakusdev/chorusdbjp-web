@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --pretty false"
+    "typecheck": "tsc -b --pretty false",
+    "audit:data": "node scripts/audit-catalog.mjs",
+    "check": "npm run typecheck && npm run audit:data && npm run build"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
