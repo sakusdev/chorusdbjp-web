@@ -13,6 +13,7 @@
     "check": "npm run typecheck && npm run audit:data && npm run audit:worker && npm run build"
   },
   "dependencies": {
+    "jose": "^6.1.0",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
