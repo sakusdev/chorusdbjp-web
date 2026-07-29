@@ -1,0 +1,43 @@
+name: 曲情報の訂正
+description: 作詞・作曲・編成・出版社などの誤りを報告します
+title: "[訂正] "
+labels: ["data-correction"]
+body:
+  - type: input
+    id: song
+    attributes:
+      label: 曲名またはChorusDBJPのURL
+      placeholder: https://chorusdbjp.sakus.org/#song=...
+    validations:
+      required: true
+  - type: dropdown
+    id: field
+    attributes:
+      label: 訂正する項目
+      options:
+        - 曲名
+        - 作詞者
+        - 作曲者
+        - 編曲者
+        - 編成
+        - 伴奏
+        - 難易度
+        - 出版社
+        - 試聴・外部リンク
+        - その他
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: 正しい情報
+      description: 現在の表示と、正しいと考える内容を書いてください。
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: 確認できる出典
+      description: 出版社、作曲者、公式楽譜ページなどのURLを優先してください。
+    validations:
+      required: true
