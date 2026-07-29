@@ -12,6 +12,7 @@ if (migrationNames.length === 0) {
 }
 
 let previousNumber = 0;
+let combinedSql = '';
 for (const name of migrationNames) {
   const match = name.match(/^(\d{4})_[a-z0-9_-]+\.sql$/);
   if (!match) {
@@ -26,6 +27,8 @@ for (const name of migrationNames) {
   previousNumber = number;
 
   const sql = await readFile(new URL(name, migrationsDir), 'utf8');
+  combinedSql += `\n-- ${name}\n${sql}`;
+
   if (/\bBEGIN\s+(?:TRANSACTION|IMMEDIATE|EXCLUSIVE)\b/i.test(sql)) {
     errors.push(`${name}: explicit transaction statements are not compatible with D1 Console imports`);
   }
@@ -36,8 +39,18 @@ for (const name of migrationNames) {
     errors.push(`${name}: temporary tables are not allowed in D1 Console-compatible migrations`);
   }
   if (/INSERT\s+(?:OR\s+IGNORE\s+)?INTO\s+works[\s\S]{0,300}['"]extra-\d+/i.test(sql)) {
-    warnings.push(`${name}: legacy extra-NNN IDs are present; add a readable ID migration`);
+    warnings.push(`${name}: legacy extra-NNN IDs are present; keep a matching work_aliases entry`);
   }
+}
+
+if (!/CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+work_aliases/i.test(combinedSql)) {
+  errors.push('work_aliases table migration is missing');
+}
+if (!/alias\s+TEXT\s+PRIMARY\s+KEY/i.test(combinedSql)) {
+  errors.push('work_aliases.alias must be a primary key');
+}
+if (!/REFERENCES\s+works\s*\(id\)\s+ON\s+DELETE\s+CASCADE/i.test(combinedSql)) {
+  errors.push('work_aliases.work_id must reference works(id) with ON DELETE CASCADE');
 }
 
 const verificationUrl = new URL('../data/author-verification.tsv', import.meta.url);
@@ -64,6 +77,9 @@ try {
     }
     if (status === 'verified' && (!lyricist || !composer || !voicing)) {
       errors.push(`${title}: verified records require lyricist, composer, and voicing`);
+    }
+    if (/^extra-\d{3}$/.test(id)) {
+      warnings.push(`${id}: verification data still uses a legacy generated ID`);
     }
     return { id, title, status };
   });
